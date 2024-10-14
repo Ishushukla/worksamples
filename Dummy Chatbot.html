@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chat</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,300;1,400&display=swap" rel="stylesheet">
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Roboto', sans-serif;
+			color: #555;
+			scroll-behavior: smooth;
+		}
+		body{
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+			height: 100vh;
+			min-width: 350px;
+		}
+		.container{
+			width: 320px;
+			height: 500px;
+			border: 1px solid #ddd;
+			border-radius: 8px;
+			box-shadow: -3px 4px 10px rgba(0,0,0,0.3);
+			overflow: hidden;
+		}
+		.box{
+			padding: 5px 10px;
+			height: calc(100% - 55px);
+			overflow: auto;
+		}
+		.typing{
+			display: none;
+			clear: both;
+			font-size: 12px;
+			font-style: italic;
+			float: left;
+			user-select: none;
+			cursor: default;
+			color: #ccc;
+		}
+		.typing span{
+			font-size: 32px;
+			animation: blink 1s infinite;
+		}
+		.typing span:nth-child(2){
+			animation-delay: 0.2s;
+		}
+		.typing span:nth-child(3){
+			animation-delay: 0.4s;
+		}
+
+		@keyframes blink {
+		  from {
+		    opacity: 0.2;
+		  }
+		  to {
+		    opacity: 1;
+		  }
+		}
+		@-webkit-keyframes blink {
+		  from {
+		    opacity: 0.2;
+		  }
+		  to {
+		    opacity: 1;
+		  }
+		}
+		.inc, .out{
+			clear: both;
+			position: relative;
+			font-size: 14px;
+			font-style: italic;
+			margin-bottom: 20px;
+			border-radius: 25px;
+			padding: 8px 12px;
+			min-width: 40px;
+			max-width: 80%;
+			box-shadow: -2px 3px 7px rgba(0,0,0,0.2);
+		}
+		.inc::after, .out::after{
+			content: attr(data-time);
+			position: absolute;
+			top: 115%;
+			font-size: 8px;
+			color: #888;
+		}
+		.inc{
+			float: left;
+			background-color: #eee; 
+		}
+		.out{
+			float: right;
+			color: #eee;
+			background-color: #1169ff;
+		}
+		.inc::after{
+			right: 0;
+		}
+		.out::after{
+			right: 0;
+		}
+		.foot{
+			position: relative;
+			clear: both;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 7px 5px 0px 5px;
+		}
+		textarea{
+			width: 100%;
+			border-radius: 25px;
+			padding: 13px 60px 13px 10px;
+			height: 44px;
+			border: 1px solid #ddd;
+			resize: none;
+			box-shadow: -1px 2px 5px rgba(0,0,0,0.2);
+			outline: none;
+		}
+		textarea::placeholder{
+			color: #aaa;
+			font-weight: 300;
+			font-style: italic;
+		}
+		.send{
+			position: absolute;
+			right: 8px;
+			width: 38px;
+			height: 38px;
+			font-size: 24px;
+			border-radius: 50%;
+			border: 1px solid #ccc;
+			color: #fff;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background-color: #1169ff;
+			box-shadow: -1px 2px 5px rgba(0,0,0,0.3);
+			cursor: pointer;
+		}
+		.togglBox{
+			display: flex;
+		    align-items: center;
+		    font-size: 16px;
+		    transform: scale(0.7);
+		    color: #aaa;
+		}
+
+		*::-webkit-scrollbar{
+			width: 5px;
+		}
+		::-webkit-scrollbar-track{
+			border-radius: 0;
+			background-color: #F5F5F5;
+		}
+		::-webkit-scrollbar-thumb{
+			border-radius: 0;
+			background-color: #ccc;
+		}
+		textarea::-webkit-scrollbar{
+			display: none;
+		}
+
+
+		/*Dark Mode CSS Start*/
+		body.dark{
+			background-color: #555;
+		}
+		.dark .container{
+			border: 1px solid #444;
+			box-shadow: -3px 4px 10px rgba(0,0,0,0.3);
+			background-color: #222;
+		}
+		.dark .inc, .dark .out{
+			color: #eee;
+			box-shadow: -2px 3px 7px rgba(0,0,0,0.2);
+		}
+		.dark .inc{
+			float: left;
+			color: #eee;
+			background-color: #444; 
+		}
+		.dark .out{
+			float: right;
+		}
+		.dark .inc::after{
+			right: 0;
+		}
+		.dark .out::after{
+			right: 0;
+		}
+		.dark textarea{
+			color: #eee;
+			background-color: #444;
+			border: 1px solid transparent;
+		}
+		.dark textarea::placeholder{
+			color: #bbb;
+		}
+		.dark .send{
+			border: 1px solid transparent;
+		}
+		.dark ::-webkit-scrollbar-track{
+			border-radius: 0;
+			background-color: #333;
+		}
+		.dark ::-webkit-scrollbar-thumb{
+			border-radius: 0;
+			background-color: #555;
+		}
+		.dark .togglBox{
+			color: #151515;
+		}
+		.dark input + .slider {
+			background-color: #222222;
+		}
+
+		.dark input + .slider:before {
+			background-color: #444;
+		}
+		
+		.dark input:checked + .slider {
+			background-color: #222222;
+		}
+
+		.dark input:checked + .slider:before {
+			background-color: #1169ff;
+		}
+		/*Dark Mode CSS End*/
+
+
+		/*Toggle CSS Start*/
+		.switch {
+			position: relative;
+			display: inline-block;
+			margin-left: 5px;
+			width: 60px;
+			height: 34px;
+		}
+
+		.switch input { 
+			opacity: 0;
+			width: 0;
+			height: 0;
+		}
+
+		.slider {
+			position: absolute;
+			cursor: pointer;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background-color: #ccc;
+			-webkit-transition: .4s;
+			transition: .4s;
+			border-radius: 34px;
+		}
+
+		.slider:before {
+			position: absolute;
+			content: "";
+			height: 26px;
+			width: 26px;
+			left: 4px;
+			bottom: 4px;
+			border-radius: 50%;
+			background-color: white;
+			-webkit-transition: .4s;
+			transition: .4s;
+		}
+
+		input:checked + .slider {
+			background-color: #2196F3;
+		}
+
+		input:checked + .slider:before {
+			-webkit-transform: translateX(26px);
+			-ms-transform: translateX(26px);
+			transform: translateX(26px);
+		}
+		/*Toggle CSS End*/
+
+		@media(max-width: 575px){
+			body{
+				flex-wrap: wrap;
+			}
+			.togglBox.one{
+				order: 1;
+			}
+			.togglBox.two{
+				order: 2;
+			}
+			.container{
+				order: 3;
+			}
+		}
+		@media(max-width: 420px){
+			.container{
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="togglBox one">
+		Theme
+		<label class="switch">
+		  <input type="checkbox" style="position: absolute; right: 0">
+		  <span class="slider round"></span>
+		</label>
+	</div>
+	<div class="container">
+		<div class="box">
+			<div class="inc" data-time="11:20 AM">Hi, This is John Doe. Lets have some talk.</div>
+			<div class="typing">John Doe is typing<span>.</span><span>.</span><span>.</span></div>
+		</div>
+		<div class="foot">
+			<textarea placeholder="Type a message..."></textarea>
+			<div class="send">></div>
+		</div>
+	</div>
+
+	<div class="togglBox two">
+		Dark Mode
+		<label class="switch">
+		  <input type="checkbox" id="darkMode" style="position: absolute; right: 0">
+		  <span class="slider round"></span>
+		</label>
+	</div>
+	<script type="text/javascript">
+		let chat = document.querySelector('.container .box');
+		let ta = document.querySelector('.container textarea');
+		let typing = document.querySelector('.container .typing');
+		let send = document.querySelector('.container .send');
+		scroll = ()=>{chat.scrollTo(0,chat.scrollHeight)};
+		scroll();
+
+		document.getElementById('darkMode').addEventListener('click',()=>{
+			setTimeout(()=>{
+				document.querySelector('body').classList.toggle('dark');
+			},100)
+		})
+
+		ta.addEventListener('keydown',(e)=>{
+			let key = e.keyCode || e.which;
+			if(key == 13){
+				e.preventDefault();
+				send.click();
+			}
+		})
+
+		send.addEventListener('click',()=>{
+			setTimeout(()=>{			
+				newMessage('out');
+			},100)
+		})
+
+		function newMessage(type){
+			let val;
+			if(type == 'out'){
+				val = ta.value.replace(/^\s+|\s+$/g,"");
+			}else{
+				let outgoings = document.querySelectorAll('.container .box .out');
+				let len = outgoings.length > 0 ? outgoings.length-1 : 0;
+				val = outgoings[random(0, len)].textContent;
+			}
+			if(val !== ''){
+				let hr = new Date().getHours();
+				let mn = new Date().getMinutes();
+				let format = ' AM';
+
+				if(hr > 12){
+					hr = hr-12;
+					format = hr == 12 ? ' AM' : ' PM';
+				}else if(hr == 12){
+					format = ' PM';
+				}else if(hr < 10){
+					hr = '0'+hr;
+				}
+
+				if(mn < 10){
+					mn = '0'+mn;
+				}
+
+				let outgoing = document.createElement('div');
+				outgoing.className = type;
+				outgoing.textContent = val;
+				outgoing.setAttribute('data-time',hr+":"+mn+format);
+
+				ta.value = null;
+				chat.appendChild(outgoing);
+				scroll();
+				if(type == 'out'){
+					setTimeout(()=>{
+						chat.appendChild(typing);
+						typing.style.display = 'block';
+						scroll();
+					},2000);
+					setTimeout(()=>{
+						typing.style.display = 'none';
+						newMessage('inc');
+					},5000);
+				}
+			}
+		}
+
+		function random(min, max) {
+		  return Math.round(Math.random() * (max - min) + min);
+		}
+	</script>
+</body>
+</html>
